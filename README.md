@@ -9,7 +9,10 @@ A representaçãoo algébrica do m ́etodo de Jacobi  ́e dada pela composi ̧c 
 entre uma matriz diagonal e as matrizes inferior e superior da matriz A. Usando
 essa decomposição se pode calcular cada variável a partir da equação:
 
-xk+1i =1aii.(bi −Xj̸=iaij .xkj)
+$$
+x_{i}^{(k+1)} = \frac{1}{a_{ii}} \left( b_i - \sum_{j \ne i} a_{ij} \, x_{j}^{(k)} \right)
+$$
+
 
 ## O que fizemos?
 Foi desenvolvido dois programas, sendo um deles uma versão sequencial para a solução do problema e o outro a versão paralela com openmp.

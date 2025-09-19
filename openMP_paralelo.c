@@ -5,9 +5,11 @@
 
 // --- CONSTANTES ---
 #define MAX_ITERACOES 10000
-#define N 2000  // Ajustado para sua matriz 2000x2000
+#define N 2000  
+
 // Critério de parada
 #define TOLERANCIA 1e-5
+
 // Nomes dos arquivos
 #define ARQUIVO_ENTRADA "sistlinear2k.dat"
 #define ARQUIVO_SAIDA "saida2000.dat"
@@ -25,8 +27,8 @@ void verificar_solucao(double **A, double *b, double *x);
 int main()
 {
     // Configurar número de threads
-    omp_set_num_threads(8);
-    int num_threads = omp_get_num_threads();
+    int num_threads = 4;
+    omp_set_num_threads(num_threads);      
     printf("Executando com %d threads OpenMP.\n", num_threads);
     
     double tempo_inicio = omp_get_wtime();
@@ -53,14 +55,14 @@ int main()
     verificar_dominancia_diagonal(A);
 
     // --- 3. Inicialização ---
-    // Começamos com uma solução inicial de zeros
+    // Solução inicial de zeros
     #pragma omp parallel for
     for (int i = 0; i < N; i++)
     {
         x_atual[i] = 0.0;
     }
 
-    // --- 4. Método de Jacobi (Lógica Principal) ---
+    // --- 4. Método de Jacobi ---
     int iteracoes = 0;
     double max_diff; // Maior diferença entre x_proximo e x_atual
 
@@ -135,9 +137,6 @@ int main()
 
 // --- IMPLEMENTAÇÃO DAS FUNÇÕES ---
 
-/**
- * @brief Lê os dados da matriz A e do vetor b a partir do arquivo de entrada.
- */
 void ler_dados(double **A, double *b)
 {
     FILE *arquivo = fopen(ARQUIVO_ENTRADA, "r");
@@ -165,9 +164,6 @@ void ler_dados(double **A, double *b)
     fclose(arquivo);
 }
 
-/**
- * @brief Escreve o vetor solução x no arquivo de saída.
- */
 void escrever_saida(double *x)
 {
     FILE *arquivo = fopen(ARQUIVO_SAIDA, "w+");
@@ -179,16 +175,12 @@ void escrever_saida(double *x)
 
     for (int i = 0; i < N; i++)
     {
-        // Escreve com 4 casas decimais e um espaço
         fprintf(arquivo, "%10.4f ", x[i]);
     }
 
     fclose(arquivo);
 }
 
-/**
- * @brief Libera toda a memória alocada dinamicamente.
- */
 void liberar_memoria(double **A, double *b, double *x_atual, double *x_proximo)
 {
     for (int i = 0; i < N; i++)
@@ -201,12 +193,9 @@ void liberar_memoria(double **A, double *b, double *x_atual, double *x_proximo)
     free(x_proximo);
 }
 
-/**
- * @brief Verifica se a matriz tem dominância diagonal.
- */
 void verificar_dominancia_diagonal(double **A) {
     printf("\n--- Verificando Dominancia Diagonal ---\n");
-    int dominante = 1; // Assumimos que é dominante até provar o contrário
+    int dominante = 1; 
 
     for (int i = 0; i < N; i++) {
         double soma_off_diagonal = 0.0;
@@ -217,7 +206,7 @@ void verificar_dominancia_diagonal(double **A) {
         }
 
         double diagonal = fabs(A[i][i]);
-        if (i < 5) { // Mostra apenas as primeiras 5 linhas para não poluir a saída
+        if (i < 5) { // Mostra apenas as primeiras 5 linhas
             printf("Linha %2d: |Diagonal| = %9.4f, Soma |Resto| = %9.4f. ", i, diagonal, soma_off_diagonal);
             
             if (diagonal <= soma_off_diagonal) {
@@ -243,15 +232,11 @@ void verificar_dominancia_diagonal(double **A) {
     printf("---------------------------------------\n\n");
 }
 
-/**
- * @brief Realiza pivotamento parcial por linhas para melhorar a estabilidade.
- */
 void pivotear(double **A, double *b) {
     for (int i = 0; i < N; i++) {
         int maxRow = i;
         double maxVal = fabs(A[i][i]);
 
-        // Busca o maior valor absoluto na coluna i (abaixo da diagonal)
         for (int k = i + 1; k < N; k++) {
             if (fabs(A[k][i]) > maxVal) {
                 maxVal = fabs(A[k][i]);
@@ -259,7 +244,6 @@ void pivotear(double **A, double *b) {
             }
         }
 
-        // Se encontrar uma linha melhor, troca
         if (maxRow != i) {
             double *tempLinha = A[i];
             A[i] = A[maxRow];
@@ -273,9 +257,6 @@ void pivotear(double **A, double *b) {
     printf("Pivotamento realizado.\n");
 }
 
-/**
- * @brief Verifica a qualidade da solução calculando o resíduo |Ax - b|.
- */
 void verificar_solucao(double **A, double *b, double *x) {
     printf("\n--- Verificando a solucao ---\n");
     double max_residuo = 0.0;

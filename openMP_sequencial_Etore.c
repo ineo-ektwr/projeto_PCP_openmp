@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
+
 
 // --- CONSTANTES ---
-#define MAX_ITERACOES 10000
+#define MAX_ITERACOES 1000
 #define N 10
 // Critério de parada
 #define TOLERANCIA 1e-5
@@ -17,7 +19,8 @@ void ler_dados(double **A, double *b);
 void escrever_saida(double *x);
 void liberar_memoria(double **A, double *b, double *x_atual, double *x_proximo);
 void verificar_dominancia_diagonal(double **A);
-
+void pivotear(double **A, double *b);
+void melhorar_dominancia_diagonal(double **A, double *b);
 // --- FUNÇÃO PRINCIPAL ---
 int main()
 {
@@ -37,7 +40,6 @@ int main()
     // --- 2. Leitura dos Dados de Entrada ---
     ler_dados(A, b);
     printf("Dados lidos do arquivo '%s'.\n", ARQUIVO_ENTRADA);
-
     verificar_dominancia_diagonal(A);
 
     // --- 3. Inicialização ---
@@ -52,6 +54,7 @@ int main()
     double max_diff; // Maior diferença entre x_proximo e x_atual
 
     printf("Iniciando o metodo de Jacobi...\n");
+    clock_t inicio = clock();
     do
     {
         // Calcula o vetor da próxima iteração (x_proximo)
@@ -95,7 +98,9 @@ int main()
         }
 
     } while (max_diff >= TOLERANCIA);
-
+    clock_t fim = clock();
+    double tempo_execucao = ((double)(fim - inicio)) / CLOCKS_PER_SEC;
+    printf("tempo de execucao: %.2f", tempo_execucao);
     printf("Convergencia alcancada em %d iteracoes.\n", iteracoes);
 
     // --- 5. Escrita do Resultado ---
@@ -146,7 +151,7 @@ void ler_dados(double **A, double *b)
  */
 void escrever_saida(double *x)
 {
-    FILE *arquivo = fopen(ARQUIVO_SAIDA, "w");
+    FILE *arquivo = fopen(ARQUIVO_SAIDA, "w+");
     if (arquivo == NULL)
     {
         perror("Erro ao abrir o arquivo de saida");
